@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hack Computer Lab — Make the Computer Draw a Box (K=80)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#1f2c13;--bar:#2a3a1a;--card:#f6f2e0;--tile:#ece6cc;--ink:#1f2c13;--lt:#f4f1e2;--mute:#5d6b45;--acc:#b9d97c;--ok:#2f6b1f;--warn:#9a5b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--lt);font:15px/1.55 Inter,system-ui,sans-serif}
+.mono,code,pre,td,th,textarea{font-family:"JetBrains Mono",ui-monospace,monospace}
+.ser{font-family:"Cormorant Garamond",Georgia,serif}
+header{background:var(--bar);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px}
+.brand{font:600 22px "Cormorant Garamond",Georgia,serif;letter-spacing:.06em}
+.sm{font-size:12px;color:var(--acc)}
+nav{display:flex;gap:4px;background:#1f2c13;border-radius:99px;padding:4px;flex-wrap:wrap}
+nav a{color:var(--lt);text-decoration:none;padding:8px 16px;border-radius:99px;font:600 13px "JetBrains Mono",monospace}
+nav a.cur{background:var(--lt);color:var(--ink)}
+.badge{background:#1f2c13;border-radius:8px;padding:6px 12px;font-size:12px;color:var(--acc)}
+main{max-width:1100px;margin:0 auto;padding:28px 20px 40px}
+.pg{display:none}.pg.on{display:block}
+h1{font:600 44px/1.05 "Cormorant Garamond",Georgia,serif;margin:6px 0 10px}
+h2{font:600 26px "Cormorant Garamond",Georgia,serif;margin:0 0 12px}
+h3{margin:0 0 6px;font-size:15px}
+.lead{color:#cbd6b2;max-width:60ch}
+.card{background:var(--card);color:var(--ink);border-radius:16px;padding:22px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}header{padding:12px}}
+.tag{display:inline-block;background:var(--tile);color:var(--mute);border-radius:6px;padding:3px 10px;font:600 11px "JetBrains Mono",monospace;margin-bottom:10px}
+.cap{font-size:12px;color:var(--mute);margin-bottom:10px}
+.tile{background:var(--tile);border-radius:10px;padding:12px 14px}
+.tile small{display:block;font-size:11px;color:var(--mute)}
+.tile b{font:600 20px "JetBrains Mono",monospace}
+.regs{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile.w{grid-column:1/3}
+.b2{font-size:15px!important;font-weight:400!important}
+button,.btn{font:600 13px Inter,sans-serif;color:var(--lt);background:var(--bar);border:0;border-radius:8px;padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block;user-select:none}
+button.p,.btn.p{background:var(--ink)}
+button.on,button[aria-pressed=true]{outline:2px solid var(--ink)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{background:var(--tile);color:var(--ink)}.tabs button.on{background:var(--ink);color:var(--lt);outline:0}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #6b9b1e;outline-offset:2px}
+pre{background:#16200d;color:#d8e8b8;border-radius:10px;padding:14px;margin:0;overflow:auto;max-height:420px;font-size:12.5px;line-height:1.5}
+textarea{width:100%;height:340px;background:#fffdf2;color:var(--ink);border:1px solid #cfc7a4;border-radius:10px;padding:12px;font-size:12.5px;resize:vertical}
+input[type=text],input[type=range]{font:inherit}
+input[type=text]{background:#fffdf2;border:1px solid #cfc7a4;border-radius:8px;padding:8px 10px;color:var(--ink)}
+.wrap{overflow:auto;max-height:340px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:5px 9px;border-bottom:1px solid #d9d1b0;font-size:12.5px;white-space:nowrap}
+.warn{border-left:4px solid var(--warn);background:#fbf0d4;padding:8px 12px;margin:8px 0;border-radius:4px;font-size:13px}
+.err{border-left-color:#a1291f;background:#f9dcd8}
+.ok{color:var(--ok)}
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.hint{color:var(--mute);font-size:13px;margin:10px 0 0}
+.frame{border:6px solid #16200d;border-radius:10px;overflow:hidden;background:#faf7ea}
+canvas{display:block;width:100%;aspect-ratio:2/1;image-rendering:pixelated}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.sp{display:flex;gap:12px;align-items:center;margin-top:14px;font-size:14px}
+label.c{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+label.c input{margin-top:5px;width:16px;height:16px}
+.fl{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--tile);border-radius:10px;padding:10px 14px}
+footer{max-width:1100px;margin:0 auto;padding:10px 20px 30px;color:#cbd6b2;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style></head><body>
+<header><div><div class="brand">HACK COMPUTER LAB</div><div class="sm mono">Nand to Tetris I · capstone · K = 80</div></div>
+<nav aria-label="Pages"><a href="#home">HOME</a><a href="#part-a">PART A</a><a href="#part-b">PART B</a><a href="#part-c">PART C</a><a href="#submission">SUBMISSION</a></nav>
+<div class="badge mono">ROLL 2501730080<br>Parameter K = 80</div></header>
+<main>
+
+<section class="pg" id="pg-home">
+<span class="tag" style="background:#2a3a1a;color:var(--acc)">K.R. Mangalam University · Individual capstone</span>
+<h1 style="font-size:60px">MAKE THE COMPUTER<br><i style="color:var(--acc)">DRAW A BOX.</i></h1>
+<p class="lead">Build the Hack computer, write your own assembler, and run machine code that draws a box on a keypress.</p>
+<p class="btns"><a class="btn" style="background:var(--lt);color:var(--ink)" href="#part-a">Part A: HDL</a><a class="btn" style="background:#2a3a1a" href="#part-c">Launch box emulator</a></p>
+<div class="grid" style="margin-top:26px">
+<div class="card"><h2>Personal parameter K</h2>
+<p class="cap">K is the last two digits of the roll number.</p>
+<input type="text" id="roll" value="2501730080" inputmode="numeric" aria-label="Roll number">
+<div class="regs" style="margin-top:14px" id="kout"></div></div>
+<div class="card"><h2>What’s on this site</h2>
+<div class="tile" style="margin-bottom:8px"><h3>Part A · Hack computer</h3>CPU.hdl, Memory.hdl, Computer.hdl</div>
+<div class="tile" style="margin-bottom:8px"><h3>Part B · Python assembler</h3>Live two-pass assembler and duplicate-label warning</div>
+<div class="tile"><h3>Part C · Box program</h3>Box.hack running on a software CPU</div></div></div>
+<div class="card"><h2>From assembly to pixels</h2><div class="pipe">
+<div class="tile"><small>Stage 1</small><b class="b2">Box.asm</b></div><div class="tile"><small>Stage 2</small><b class="b2">assembler.py</b></div>
+<div class="tile"><small>Stage 3</small><b class="b2">Box.hack</b></div><div class="tile"><small>Stage 4</small><b class="b2">Hack CPU</b></div>
+<div class="tile"><small>Stage 5</small><b class="b2">Screen RAM</b></div></div></div>
+</section>
+
+<section class="pg" id="pg-part-a">
+<span class="tag" style="background:#2a3a1a;color:var(--acc)">Part A · Hardware description language</span>
+<h1>Hack Computer HDL</h1>
+<p class="lead">Your CPU, Memory and top-level Computer chips.</p>
+<div class="grid" style="margin-top:20px">
+<div class="card" id="hdl"><div class="tabs"></div><pre></pre><p class="btns"><button class="p" id="hcopy">Copy HDL</button><button id="hdl-dl">Download</button></p></div>
+<div>
+<div class="card"><h2>Logic highlights</h2>
+<div class="tile" style="margin-bottom:8px"><b class="b2">instruction[15]</b><br>0 loads a constant into A. 1 is a C-instruction.</div>
+<div class="tile" style="margin-bottom:8px"><b class="b2">instruction[12]</b><br>Chooses A or RAM[A] (inM) as the ALU’s second input.</div>
+<div class="tile" style="margin-bottom:8px"><b class="b2">instruction[5:3]</b><br>Destination bits: A, D and memory write (writeM).</div>
+<div class="tile"><b class="b2">instruction[2:0]</b><br>Jump bits, combined with the ALU’s zr and ng flags.</div></div>
+<div class="card"><h2>Memory map</h2><p class="mono" style="font-size:13px">0–16383 RAM16K<br>16384–24575 Screen<br>24576 Keyboard</p></div>
+<div class="warn">Not yet verified: these chips need the official Hardware Simulator and your course’s test scripts. Don’t mark Part A as passed until you have run them.</div>
+</div></div>
+</section>
+
+<section class="pg" id="pg-part-b">
+<span class="tag" style="background:#2a3a1a;color:var(--acc)">Part B · Python assembler</span>
+<h1>Two-pass Assembler</h1>
+<p class="lead">Edit the assembly and the machine code updates. The K mod 3 = 2 feature warns when a label is declared twice.</p>
+<div class="card" style="margin-top:20px"><div class="btns" style="margin:0"><span class="mono" style="align-self:center;font-size:12px">Load program:</span>
+<button class="p" data-pre="Box.asm">Box.asm</button><button class="p" data-pre="duplicate_label_demo.asm">Duplicate label test</button>
+<span id="status" class="mono" style="align-self:center;font-size:12px;margin-left:auto"></span></div></div>
+<div class="grid">
+<div class="card"><h2>Assembly source</h2><textarea id="src" spellcheck="false" aria-label="Assembly source"></textarea>
+<p class="hint">Edit or paste assembly to recompile instantly.</p></div>
+<div class="card" id="outc"><div class="tabs"><button data-tab="mc" class="on">Machine code</button><button data-tab="st">Symbol table</button><button data-tab="py">assembler.py</button></div>
+<div data-pane="mc"><div class="wrap"><table><thead><tr><th>ROM</th><th>Binary</th><th>Source</th></tr></thead><tbody id="mc"></tbody></table></div><p class="btns"><button class="p" id="dlh">Download .hack</button></p></div>
+<div data-pane="st" hidden><div class="wrap"><table><thead><tr><th>Symbol</th><th>Kind</th><th>Address</th></tr></thead><tbody id="st"></tbody></table></div></div>
+<div data-pane="py" hidden><pre id="py"></pre></div>
+<div id="msgs"></div><p class="hint mono" id="cnt"></p></div></div>
+</section>
+
+<section class="pg" id="pg-part-c">
+<span class="tag" style="background:#2a3a1a;color:var(--acc)">Part C · Box program</span>
+<h1>CPU &amp; Screen Emulator</h1>
+<div class="grid">
+<div class="card">
+<div class="cap mono">SCREEN 512 × 256 · box at x 0–15, rows 80–99</div>
+<div class="frame"><canvas id="cv" width="512" height="256" role="img" aria-label="Hack screen"></canvas></div>
+<div class="btns">
+<button class="p" id="run">Pause CPU</button><button id="stp">Single step</button><button id="rst">Reset</button>
+<button id="hold">Hold key to draw box</button><button id="lock" aria-pressed="false">Lock key down</button>
+</div>
+<div class="sp"><span>Speed</span><input id="spd" type="range" min="100" max="8000" step="100" value="2000" aria-label="Steps per frame"><span class="mono" id="spv">2000 steps/frame</span></div>
+<p class="hint">Hold any key (or the button). The emulator writes the key code to RAM[24576]; releasing writes 0. Use “Lock key down” to keep a key pressed so you can pause with the box on screen.</p>
+<p class="hint">While a key is down, your name and roll number are drawn on the screen by this page. Box.hack itself draws only the box.</p>
+</div>
+<div class="card">
+<h2>Live CPU registers</h2>
+<div class="regs">
+<div class="tile"><small class="mono">PC</small><b id="pc">0</b></div>
+<div class="tile"><small class="mono">A</small><b id="a">0</b></div>
+<div class="tile"><small class="mono">D</small><b id="d">0</b></div>
+<div class="tile"><small class="mono">RAM[24576] KBD</small><b id="kbd">0</b></div>
+<div class="tile w"><small class="mono">INSTRUCTION</small><b class="b2" id="ins">0</b></div>
+<div class="tile w"><small class="mono">CYCLES</small><b id="cyc">0</b></div>
+</div>
+<h2 style="margin-top:24px">Screen memory monitor</h2>
+<table><thead><tr><th>Address</th><th>Row</th><th>Value</th></tr></thead><tbody id="mon" class="mono"></tbody></table>
+</div></div>
+</section>
+
+<section class="pg" id="pg-submission">
+<span class="tag" style="background:#2a3a1a;color:var(--acc)">Final submission</span>
+<h1>Deliverables</h1>
+<div class="card"><h2>Evidence checklist</h2><p class="cap">Nothing is ticked for you. Tick an item only after you have done it.</p><div id="chk"></div></div>
+<div class="card"><h2>Files</h2><div id="files" style="display:grid;gap:8px"></div></div>
+</section>
+</main>
+<footer><b>Aman Kushwaha</b> · Roll 2501730080 · School of Engineering &amp; Technology, K.R. Mangalam University · Parameter K = 80 · start row 80, 16 × 20 px, screen address 18944</footer>
+<script>
+const FILES={"CPU.hdl": "// Hack CPU: combines A register, D register, ALU and program counter.\nCHIP CPU {\n    IN inM[16], instruction[16], reset;\n    OUT outM[16], writeM, addressM[15], pc[15];\n\n    PARTS:\n    // A-instruction or C-instruction destination selection.\n    Not(in=instruction[15], out=isA);\n    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aIn);\n    Or(a=isA, b=instruction[5], out=loadA);\n    ARegister(in=aIn, load=loadA, out=aOut, out[0..14]=addressM);\n\n    // D register is loaded only by a C-instruction with d2 set.\n    And(a=instruction[15], b=instruction[4], out=loadD);\n    DRegister(in=aluOut, load=loadD, out=dOut);\n\n    // ALU operands and control bits.\n    And(a=instruction[15], b=instruction[12], out=useM);\n    Mux16(a=aOut, b=inM, sel=useM, out=aluY);\n    ALU(x=dOut, y=aluY,\n        zx=instruction[11], nx=instruction[10],\n        zy=instruction[9], ny=instruction[8],\n        f=instruction[7], no=instruction[6],\n        out=aluOut, out=outM, zr=zr, ng=ng);\n\n    // Memory write enable.\n    And(a=instruction[15], b=instruction[3], out=writeM);\n\n    // Jump decision for C-instructions.\n    Not(in=ng, out=notNg);\n    Not(in=zr, out=notZr);\n    And(a=notNg, b=notZr, out=positive);\n    And(a=instruction[2], b=ng, out=jlt);\n    And(a=instruction[1], b=zr, out=jeq);\n    And(a=instruction[0], b=positive, out=jgtPart);\n    Or(a=jlt, b=jeq, out=jump1);\n    Or(a=jump1, b=jgtPart, out=jumpCond);\n    And(a=instruction[15], b=jumpCond, out=doJump);\n\n    PC(in=aOut, load=doJump, inc=true, reset=reset, out[0..14]=pc);\n}\n", "Memory.hdl": "// Hack memory map:\n// RAM16K: 0..16383; Screen: 16384..24575; Keyboard: 24576.\nCHIP Memory {\n    IN in[16], load, address[15];\n    OUT out[16];\n\n    PARTS:\n    // address[14]=0 selects RAM16K. Otherwise address[13]\n    // selects Screen (0) or Keyboard (1).\n    DMux(in=load, sel=address[14], a=loadRam, b=loadUpper);\n    DMux(in=loadUpper, sel=address[13], a=loadScreen, b=unusedKeyboardLoad);\n\n    RAM16K(in=in, load=loadRam, address=address[0..13], out=ramOut);\n    Screen(in=in, load=loadScreen, address=address[0..12], out=screenOut);\n    Keyboard(out=keyboardOut);\n\n    Mux16(a=screenOut, b=keyboardOut, sel=address[13], out=upperOut);\n    Mux16(a=ramOut, b=upperOut, sel=address[14], out=out);\n}\n", "Computer.hdl": "// Complete Hack computer: CPU + Memory + instruction ROM.\nCHIP Computer {\n    IN reset;\n\n    PARTS:\n    ROM32K(address=pc, out=instruction);\n    CPU(inM=memoryOut, instruction=instruction, reset=reset,\n        outM=outM, writeM=writeM, addressM=addressM, pc=pc);\n    Memory(in=outM, load=writeM, address=addressM, out=memoryOut);\n}\n", "Box.asm": "// Nand to Tetris Capstone: Make the Computer Draw a Box\n// Personal number K = 80\n// Start row = 80; height = 20 rows; width = 16 pixels (one word).\n// Draw while any key is pressed; clear when no key is pressed.\n\n(START)\n    @KBD\n    D=M\n    @DRAW\n    D;JNE\n    @CLEAR\n    0;JMP\n\n(DRAW)\n    @18944       // SCREEN + 32*80 = 16384 + 2560\n    D=A\n    @ROW_PTR\n    M=D\n    @20\n    D=A\n    @ROWS_LEFT\n    M=D\n\n(DRAW_LOOP)\n    @ROW_PTR\n    A=M\n    M=-1\n    @32\n    D=A\n    @ROW_PTR\n    M=D+M\n    @ROWS_LEFT\n    MD=M-1\n    @DRAW_LOOP\n    D;JGT\n    @START\n    0;JMP\n\n(CLEAR)\n    @18944\n    D=A\n    @ROW_PTR\n    M=D\n    @20\n    D=A\n    @ROWS_LEFT\n    M=D\n\n(CLEAR_LOOP)\n    @ROW_PTR\n    A=M\n    M=0\n    @32\n    D=A\n    @ROW_PTR\n    M=D+M\n    @ROWS_LEFT\n    MD=M-1\n    @CLEAR_LOOP\n    D;JGT\n    @START\n    0;JMP\n", "Box.hack": "0110000000000000\n1111110000010000\n0000000000000110\n1110001100000101\n0000000000011011\n1110101010000111\n0100101000000000\n1110110000010000\n0000000000010000\n1110001100001000\n0000000000010100\n1110110000010000\n0000000000010001\n1110001100001000\n0000000000010000\n1111110000100000\n1110111010001000\n0000000000100000\n1110110000010000\n0000000000010000\n1111000010001000\n0000000000010001\n1111110010011000\n0000000000001110\n1110001100000001\n0000000000000000\n1110101010000111\n0100101000000000\n1110110000010000\n0000000000010000\n1110001100001000\n0000000000010100\n1110110000010000\n0000000000010001\n1110001100001000\n0000000000010000\n1111110000100000\n1110101010001000\n0000000000100000\n1110110000010000\n0000000000010000\n1111000010001000\n0000000000010001\n1111110010011000\n0000000000100011\n1110001100000001\n0000000000000000\n1110101010000111\n", "assembler.py": "#!/usr/bin/env python3\n\"\"\"Two-pass assembler for the Nand2Tetris Hack computer.\n\nUsage:\n    python assembler.py input.asm [output.hack]\n\nFor K=80, duplicate labels produce a warning (K mod 3 == 2).\n\"\"\"\nfrom pathlib import Path\nimport re\nimport sys\n\nPREDEFINED = {\n    \"SP\": 0, \"LCL\": 1, \"ARG\": 2, \"THIS\": 3, \"THAT\": 4,\n    \"SCREEN\": 16384, \"KBD\": 24576,\n}\nPREDEFINED.update({f\"R{i}\": i for i in range(16)})\n\nDEST = {\n    \"\": \"000\", \"M\": \"001\", \"D\": \"010\", \"MD\": \"011\",\n    \"A\": \"100\", \"AM\": \"101\", \"AD\": \"110\", \"AMD\": \"111\",\n}\nJUMP = {\n    \"\": \"000\", \"JGT\": \"001\", \"JEQ\": \"010\", \"JGE\": \"011\",\n    \"JLT\": \"100\", \"JNE\": \"101\", \"JLE\": \"110\", \"JMP\": \"111\",\n}\nCOMP = {\n    \"0\": \"0101010\", \"1\": \"0111111\", \"-1\": \"0111010\",\n    \"D\": \"0001100\", \"A\": \"0110000\", \"M\": \"1110000\",\n    \"!D\": \"0001101\", \"!A\": \"0110001\", \"!M\": \"1110001\",\n    \"-D\": \"0001111\", \"-A\": \"0110011\", \"-M\": \"1110011\",\n    \"D+1\": \"0011111\", \"A+1\": \"0110111\", \"M+1\": \"1110111\",\n    \"D-1\": \"0001110\", \"A-1\": \"0110010\", \"M-1\": \"1110010\",\n    \"D+A\": \"0000010\", \"D+M\": \"1000010\",\n    \"D-A\": \"0010011\", \"D-M\": \"1010011\",\n    \"A-D\": \"0000111\", \"M-D\": \"1000111\",\n    \"D&A\": \"0000000\", \"D&M\": \"1000000\",\n    \"D|A\": \"0010101\", \"D|M\": \"1010101\",\n}\nSYMBOL_RE = re.compile(r\"^[A-Za-z_.$:][A-Za-z0-9_.$:]*$\")\n\n\nclass AssemblyError(Exception):\n    pass\n\n\ndef clean_source(path):\n    \"\"\"Return (original_line_number, instruction) pairs.\"\"\"\n    result = []\n    with open(path, \"r\", encoding=\"utf-8\") as source:\n        for line_no, raw in enumerate(source, 1):\n            line = raw.split(\"//\", 1)[0].strip()\n            if line:\n                result.append((line_no, re.sub(r\"\\s+\", \"\", line)))\n    return result\n\n\ndef first_pass(lines):\n    \"\"\"Build label table; duplicate labels warn and keep the first address.\"\"\"\n    symbols = PREDEFINED.copy()\n    instructions = []\n    rom_address = 0\n\n    for line_no, line in lines:\n        if line.startswith(\"(\") and line.endswith(\")\"):\n            label = line[1:-1]\n            if not label or not SYMBOL_RE.match(label):\n                raise AssemblyError(f\"Line {line_no}: invalid label declaration\")\n            if label in symbols:\n                print(f\"Warning: Line {line_no}: duplicate label '{label}' \"\n                      f\"(first definition/address retained)\")\n            else:\n                symbols[label] = rom_address\n        else:\n            if \"(\" in line or \")\" in line:\n                raise AssemblyError(f\"Line {line_no}: invalid label syntax\")\n            instructions.append((line_no, line))\n            rom_address += 1\n\n    if rom_address > 32768:\n        raise AssemblyError(\"Program exceeds the 32K ROM address space\")\n    return symbols, instructions\n\n\ndef assemble(lines):\n    symbols, instructions = first_pass(lines)\n    next_variable = 16\n    output = []\n\n    for line_no, instruction in instructions:\n        try:\n            if instruction.startswith(\"@\"):\n                value = instruction[1:]\n                if not value:\n                    raise AssemblyError(\"empty A-instruction\")\n                if value.isdigit():\n                    address = int(value)\n                else:\n                    if not SYMBOL_RE.match(value):\n                        raise AssemblyError(f\"invalid symbol '{value}'\")\n                    if value not in symbols:\n                        if next_variable > 32767:\n                            raise AssemblyError(\"no available RAM addresses for variables\")\n                        symbols[value] = next_variable\n                        next_variable += 1\n                    address = symbols[value]\n                if not 0 <= address <= 32767:\n                    raise AssemblyError(f\"A-instruction value {address} is outside 0..32767\")\n                output.append(f\"{address:016b}\")\n            else:\n                if instruction.count(\"=\") > 1 or instruction.count(\";\") > 1:\n                    raise AssemblyError(\"malformed C-instruction\")\n                if \";\" in instruction:\n                    left, jump = instruction.split(\";\", 1)\n                else:\n                    left, jump = instruction, \"\"\n                if \"=\" in left:\n                    dest, comp = left.split(\"=\", 1)\n                else:\n                    dest, comp = \"\", left\n                if comp not in COMP:\n                    raise AssemblyError(f\"unknown computation '{comp}'\")\n                if dest not in DEST:\n                    raise AssemblyError(f\"invalid destination '{dest}'\")\n                if jump not in JUMP:\n                    raise AssemblyError(f\"invalid jump '{jump}'\")\n                output.append(\"111\" + COMP[comp] + DEST[dest] + JUMP[jump])\n        except AssemblyError as exc:\n            raise AssemblyError(f\"Line {line_no}: {exc}\") from exc\n\n    return output, symbols\n\n\ndef main():\n    if len(sys.argv) not in (2, 3):\n        print(\"Usage: python assembler.py input.asm [output.hack]\")\n        raise SystemExit(2)\n\n    input_path = Path(sys.argv[1])\n    output_path = Path(sys.argv[2]) if len(sys.argv) == 3 else input_path.with_suffix(\".hack\")\n\n    try:\n        lines = clean_source(input_path)\n        machine_code, symbols = assemble(lines)\n        output_path.write_text(\"\\n\".join(machine_code) + \"\\n\", encoding=\"utf-8\")\n        print(f\"Success: wrote {len(machine_code)} instructions to {output_path}\")\n        print(\"K=80; K mod 3=2: duplicate-label warning feature is enabled.\")\n    except (OSError, AssemblyError) as exc:\n        print(exc, file=sys.stderr)\n        raise SystemExit(1)\n\n\nif __name__ == \"__main__\":\n    main()\n", "duplicate_label_demo.asm": "(AGAIN)\n@AGAIN\n0;JMP\n(AGAIN)\n@0\n", "duplicate_label_demo.hack": "0000000000000000\n1110101010000111\n0000000000000000\n", "README.md": "# Nand to Tetris I Capstone \u2014 Make the Computer Draw a Box\n\n**Student:** Aman Kushwaha  \n**Roll number:** 2501730080  \n**Personal number:** K = 80  \n**K mod 3:** 2 \u2014 warn about duplicate labels  \n**K mod 4:** 0 \u2014 width 16 pixels (one 16-bit screen word)\n\n## Project layout\n\n- `CPU.hdl`, `Memory.hdl`, `Computer.hdl` \u2014 Hack computer integration.\n- `assembler.py` \u2014 two-pass Hack assembler.\n- `Box.asm` \u2014 keyboard-controlled rectangle program.\n- `Box.hack` \u2014 machine code generated by this assembler.\n- `report_template.md` \u2014 report draft and evidence checklist.\n\n## Run the assembler\n\nFrom this directory:\n\n```bash\npython assembler.py Box.asm\n```\n\nThis creates `Box.hack`. To choose an output filename:\n\n```bash\npython assembler.py Box.asm output.hack\n```\n\nThe assembler strips comments and blank lines, records labels in pass one, and translates instructions in pass two. New variables are allocated from RAM[16]. For K=80, duplicate label declarations produce a warning; the first definition is retained.\n\n## Box calculations\n\n- Starting row: 80\n- Height: 20 rows (80 through 99)\n- Width: `16 * ((80 % 4) + 1) = 16` pixels\n- Words per row: 1\n- First screen word: `16384 + 32*80 = 18944`\n- Next row: add 32 to the screen address\n\nThe program checks `KBD` continuously. A nonzero keyboard value draws `-1` to the target word in each of 20 rows. A zero value writes `0` to those same words.\n\n## HDL note\n\nThe HDL files use the standard Nand2Tetris built-in chips (`ARegister`, `DRegister`, `ALU`, `PC`, `RAM16K`, `Screen`, `Keyboard`, `ROM32K`). Check these against the exact HDL API/version and your course-provided project chips in the Hardware Simulator. Use the official `.tst` and `.cmp` files supplied by your course; do not claim a test passed until you have run it and captured the result.\n\n## Required verification still to perform\n\n1. Run CPU, Memory and Computer tests supplied by your instructor.\n2. Run the official assembler on `Add.asm`, `Max.asm`, `Rect.asm`, and `Pong.asm`; compare byte-for-byte with this assembler's output.\n3. Open `Box.hack` in the CPU Emulator and test key press/release.\n4. Capture genuine screenshots of the test results and emulator output.\n", "report_template.md": "# Capstone Project: Make the Computer Draw a Box\n\n**Course:** Nand to Tetris \u2013 I  \n**School:** School of Engineering & Technology, K.R. Mangalam University  \n**Name:** Aman Kushwaha  \n**Roll number:** 2501730080  \n**Personal number:** K = 80\n\n## 1. Objective\nThe objective is to integrate a Hack computer using HDL, implement a two-pass assembler in Python, and write a Hack assembly program that displays a black rectangle while a keyboard key is pressed.\n\n## 2. Part A \u2014 Hack computer implementation\n`CPU.hdl` connects the A and D registers, ALU, memory interface and program counter. The A register supplies addresses and jump targets; the D register stores an ALU operand; the ALU performs the computation selected by the instruction bits. The CPU asserts `writeM` for memory-write instructions and updates the program counter according to the jump condition.\n\n`Memory.hdl` selects RAM, screen or keyboard according to the address. `Computer.hdl` connects the instruction ROM, CPU and memory.\n\n**Evidence to insert:** screenshots of successful CPU, Memory and Computer official tests.  \n**Important:** only state that a test passed after running the supplied test script.\n\n## 3. Part B \u2014 Python assembler\nThe assembler uses two passes. In pass one, it removes comments/blank lines, records labels at the current ROM instruction address, and excludes label declarations from the instruction count. In pass two, it translates A-instructions and C-instructions into 16-bit binary. Predefined symbols are loaded first; new variables receive RAM addresses beginning at 16.\n\nFor this student, `K mod 3 = 2`, so the additional feature is a warning when a label is declared more than once. The assembler keeps the first definition.\n\n**Evidence to insert:** terminal screenshot showing assembly success and a duplicate-label warning test. Also insert comparisons for Add.asm, Max.asm, Rect.asm and Pong.asm.\n\n## 4. Part C \u2014 Box program and calculations\n`K = 80`, therefore the starting row is 80. The height is 20 rows. The width is `16 \u00d7 ((80 mod 4) + 1) = 16` pixels, which is one screen word per row. Screen row 80 begins at `SCREEN + 32 \u00d7 80 = 18944`. The program checks the keyboard memory-mapped address `KBD` repeatedly. When a key is pressed, it writes `-1` to one word in each of 20 rows; when no key is pressed, it writes `0` to those words.\n\n**Evidence to insert:** screenshot of the running box in CPU Emulator, plus a screenshot after releasing the key showing the cleared area.\n\n## 5. Mistake encountered and correction\nReplace this paragraph with a real mistake you encountered. Example structure: \u201cInitially, my box appeared on the wrong row because I calculated the screen address incorrectly. I checked the memory map, used `SCREEN + 32 \u00d7 row`, corrected the starting address to 18944 for row 80, and reran the program.\u201d\n\n## 6. Conclusion\nThe project demonstrates the connection between Hack hardware, machine-language translation and memory-mapped screen I/O. The final demonstration should show the box appearing while a key is held and disappearing after release.\n\n## Submission evidence checklist\n- [ ] Official HDL test screenshots\n- [ ] Assembler comparison evidence for Add, Max, Rect and Pong\n- [ ] Duplicate-label warning evidence\n- [ ] CPU Emulator screenshot with box visible\n- [ ] CPU Emulator screenshot after key release\n- [ ] GitHub repository URL\n"},TB={"PRE": {"SP": 0, "LCL": 1, "ARG": 2, "THIS": 3, "THAT": 4, "SCREEN": 16384, "KBD": 24576, "R0": 0, "R1": 1, "R2": 2, "R3": 3, "R4": 4, "R5": 5, "R6": 6, "R7": 7, "R8": 8, "R9": 9, "R10": 10, "R11": 11, "R12": 12, "R13": 13, "R14": 14, "R15": 15}, "COMP": {"0": "0101010", "1": "0111111", "-1": "0111010", "D": "0001100", "A": "0110000", "M": "1110000", "!D": "0001101", "!A": "0110001", "!M": "1110001", "-D": "0001111", "-A": "0110011", "-M": "1110011", "D+1": "0011111", "A+1": "0110111", "M+1": "1110111", "D-1": "0001110", "A-1": "0110010", "M-1": "1110010", "D+A": "0000010", "D+M": "1000010", "D-A": "0010011", "D-M": "1010011", "A-D": "0000111", "M-D": "1000111", "D&A": "0000000", "D&M": "1000000", "D|A": "0010101", "D|M": "1010101"}, "DEST": {"": "000", "M": "001", "D": "010", "MD": "011", "A": "100", "AM": "101", "AD": "110", "AMD": "111"}, "JUMP": {"": "000", "JGT": "001", "JEQ": "010", "JGE": "011", "JLT": "100", "JNE": "101", "JLE": "110", "JMP": "111"}};
+const $=id=>document.getElementById(id);
+const pages=['home','part-a','part-b','part-c','submission'];
+function route(){let h=location.hash.slice(1);if(!pages.includes(h))h='home';
+ pages.forEach(p=>$('pg-'+p).classList.toggle('on',p===h));
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('cur',a.hash==='#'+h));scrollTo(0,0)}
+addEventListener('hashchange',route);route();
+function dl(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'}));a.download=name;a.click()}
+// Home: K engine
+function kcalc(){const r=$('roll').value.replace(/\D/g,'');const K=r.length>=2?+r.slice(-2):0,m3=K%3,m4=K%4,w=16*(m4+1),wd=w/16,sa=16384+32*K,ea=sa+32*19+wd-1;
+ const feat=['symbols.txt of all labels and variables','(see your assignment sheet)','warn on duplicate labels'][m3];
+ $('kout').innerHTML=`<div class="tile"><small>K</small><b>${K}</b></div><div class="tile"><small>K mod 3 · K mod 4</small><b>${m3} · ${m4}</b></div>
+ <div class="tile"><small>Box</small><b class="b2">row ${K}, ${w} × 20 px</b></div><div class="tile"><small>Words per row</small><b class="b2">${wd}</b></div>
+ <div class="tile w"><small>Screen addresses</small><b class="b2">${sa} … ${ea}</b></div><div class="tile w"><small>Part B feature</small><b class="b2">${feat}</b></div>`}
+$('roll').oninput=kcalc;kcalc();
+// Part A
+(function(){const root=$('hdl'),tabs=root.querySelector('.tabs'),pre=root.querySelector('pre');let cur='CPU.hdl';
+ ['CPU.hdl','Memory.hdl','Computer.hdl'].forEach(n=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>show(n);tabs.appendChild(b)});
+ function show(n){cur=n;pre.textContent=FILES[n];[...tabs.children].forEach(b=>b.classList.toggle('on',b.textContent===n))}
+ $('hcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(FILES[cur]).catch(()=>{});e.target.textContent='Copied';setTimeout(()=>e.target.textContent='Copy HDL',1200)};
+ $('hdl-dl').onclick=()=>dl(cur,FILES[cur]);show(cur)})();
+// Part B
+const SYM=/^[A-Za-z_.$:][A-Za-z0-9_.$:]*$/;
+function asm(src){const sy={...TB.PRE},L={},V={},W=[],E=[],lines=[],ins=[],out=[];let rom=0,nv=16;
+ src.split('\n').forEach((raw,i)=>{const l=raw.split('//')[0].replace(/\s+/g,'');if(l)lines.push([i+1,l])});
+ for(const [n,l] of lines){const m=l.match(/^\((.*)\)$/);
+  if(m){const s=m[1];if(!s||!SYM.test(s))E.push({n,t:'invalid label declaration'});else if(s in sy)W.push({n,t:`duplicate label '${s}' (first definition/address retained)`});else{sy[s]=rom;L[s]=rom}}
+  else if(/[()]/.test(l))E.push({n,t:'invalid label syntax'});else{ins.push([n,l]);rom++}}
+ for(const [n,l] of ins){try{
+  if(l[0]==='@'){const v=l.slice(1);if(!v)throw'empty A-instruction';let a;
+   if(/^\d+$/.test(v))a=+v;else{if(!SYM.test(v))throw'invalid symbol '+v;if(!(v in sy)){sy[v]=nv;V[v]=nv++}a=sy[v]}
+   if(a>32767)throw'value '+a+' is outside 0..32767';out.push([l,a.toString(2).padStart(16,'0')])}
+  else{const [lf,j='']=l.split(';');let d='',c=lf;if(lf.includes('='))[d,c]=lf.split('=');
+   if(!(c in TB.COMP))throw'unknown computation '+c;if(!(d in TB.DEST))throw'invalid destination '+d;if(!(j in TB.JUMP))throw'invalid jump '+j;
+   out.push([l,'111'+TB.COMP[c]+TB.DEST[d]+TB.JUMP[j]])}}catch(e){E.push({n,t:String(e)})}}
+ return{out,L,V,W,E}}
+let last=null;
+function compile(){const r=last=asm($('src').value);
+ $('mc').innerHTML=r.out.map((o,i)=>`<tr><td>${i}</td><td>${o[1]}</td><td>${o[0]}</td></tr>`).join('');
+ $('st').innerHTML=Object.entries(r.L).map(([k,v])=>`<tr><td>${k}</td><td>label</td><td>${v}</td></tr>`).concat(Object.entries(r.V).map(([k,v])=>`<tr><td>${k}</td><td>variable</td><td>${v}</td></tr>`)).join('');
+ $('msgs').innerHTML=r.E.map(e=>`<div class="warn err">Line ${e.n}: ${e.t}</div>`).concat(r.W.map(e=>`<div class="warn">Warning: Line ${e.n}: ${e.t}</div>`)).join('');
+ $('status').innerHTML=r.E.length?`<span style="color:#a1291f">${r.E.length} error(s)</span>`:'<span class="ok">Assembled cleanly</span>'+(r.W.length?' with warnings':'');
+ $('cnt').textContent=`ROM instructions: ${r.out.length} · Labels: ${Object.keys(r.L).length} · Variables: ${Object.keys(r.V).length} · Warnings: ${r.W.length}`}
+$('src').oninput=compile;$('py').textContent=FILES['assembler.py'];
+document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{$('src').value=FILES[b.dataset.pre];compile()});
+$('src').value=FILES['Box.asm'];compile();
+$('dlh').onclick=()=>last.E.length?alert('Fix the errors first.'):dl('output.hack',last.out.map(o=>o[1]).join('\n')+'\n');
+document.querySelectorAll('#outc [data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('#outc [data-tab]').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('#outc [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==b.dataset.tab)});
+// Submission
+const items=['CPU, Memory and Computer official tests run, screenshots saved','Official assembler compared on Add, Max, Rect and Pong','Duplicate-label warning screenshot','Box.hack loaded in the official CPU Emulator','Emulator screenshot with the box visible','Emulator screenshot after key release','Real mistake written in the report','GitHub repository URL added'];
+let sv={};try{sv=JSON.parse(localStorage.getItem('k80chk')||'{}')}catch(e){}
+items.forEach((t,i)=>{const l=document.createElement('label');l.className='c';l.innerHTML='<input type="checkbox"><span></span>';l.querySelector('span').textContent=t;const c=l.querySelector('input');c.checked=!!sv[i];
+ c.onchange=()=>{sv[i]=c.checked;try{localStorage.setItem('k80chk',JSON.stringify(sv))}catch(e){}};$('chk').appendChild(l)});
+Object.keys(FILES).forEach(n=>{const d=document.createElement('div');d.className='fl';d.innerHTML='<span class="mono"></span><span class="hint" style="margin:0"></span>';
+ d.children[0].textContent=n;d.children[1].textContent=(FILES[n].length/1024).toFixed(1)+' KB';const b=document.createElement('button');b.className='p';b.textContent='Download';b.onclick=()=>dl(n,FILES[n]);d.appendChild(b);$('files').appendChild(d)});
+// Part C emulator
+
+const ROM=`0110000000000000
+1111110000010000
+0000000000000110
+1110001100000101
+0000000000011011
+1110101010000111
+0100101000000000
+1110110000010000
+0000000000010000
+1110001100001000
+0000000000010100
+1110110000010000
+0000000000010001
+1110001100001000
+0000000000010000
+1111110000100000
+1110111010001000
+0000000000100000
+1110110000010000
+0000000000010000
+1111000010001000
+0000000000010001
+1111110010011000
+0000000000001110
+1110001100000001
+0000000000000000
+1110101010000111
+0100101000000000
+1110110000010000
+0000000000010000
+1110001100001000
+0000000000010100
+1110110000010000
+0000000000010001
+1110001100001000
+0000000000010000
+1111110000100000
+1110101010001000
+0000000000100000
+1110110000010000
+0000000000010000
+1111000010001000
+0000000000010001
+1111110010011000
+0000000000100011
+1110001100000001
+0000000000000000
+1110101010000111
+`.trim().split(/\s+/).map(s=>parseInt(s,2));
+const ram=new Int16Array(24577);let A=0,D=0,pc=0,cyc=0,running=true,lastIns=0;
+const KBD=24576,NAME='Aman Kushwaha',ROLL='2501730080';
+const ALU={42:(x,y)=>0,63:()=>1,58:()=>-1,12:x=>x,48:(x,y)=>y,13:x=>~x,49:(x,y)=>~y,15:x=>-x,51:(x,y)=>-y,31:x=>x+1,55:(x,y)=>y+1,14:x=>x-1,50:(x,y)=>y-1,2:(x,y)=>x+y,19:(x,y)=>x-y,7:(x,y)=>y-x,0:(x,y)=>x&y,21:(x,y)=>x|y};
+function step(){
+ if(pc>=ROM.length)return;const i=ROM[pc];lastIns=i;cyc++;
+ if(!(i&0x8000)){A=i;pc++;return}
+ const y=(i&0x1000)?ram[A]:A;
+ const v=(ALU[(i>>6)&63](D,y))<<16>>16;
+ const old=A,dst=(i>>3)&7,j=i&7;
+ if(dst&1)ram[old]=v;if(dst&2)D=v;if(dst&4)A=v&0xFFFF;
+ pc=((j&1&&v>0)||(j&2&&v===0)||(j&4&&v<0))?old:pc+1;
+}
+const cv=document.getElementById('cv'),cx=cv.getContext('2d'),img=cx.createImageData(512,256);
+let held=false,locked=false;
+function setKey(v){ram[KBD]=v}
+function render(){
+ const d=img.data;
+ for(let w=0;w<8192;w++){const val=ram[16384+w],r=(w>>5),c=(w&31)*16;
+  for(let b=0;b<16;b++){const p=((r*512)+c+b)*4,on=(val>>b)&1;
+   d[p]=on?29:250;d[p+1]=on?42:247;d[p+2]=on?18:234;d[p+3]=255}}
+ cx.putImageData(img,0,0);
+ if(ram[KBD]!==0){cx.fillStyle='#1d2a12';cx.textAlign='center';cx.textBaseline='middle';
+  cx.font='600 36px "Cormorant Garamond",Georgia,serif';cx.fillText(NAME,256,122);
+  cx.font='600 26px "JetBrains Mono",monospace';cx.fillText('Roll No. '+ROLL,256,164);cx.textAlign='start'}
+ $('pc').textContent=pc;$('a').textContent=A;$('d').textContent=D;$('kbd').textContent=ram[KBD];
+ $('ins').textContent=(lastIns&0xFFFF).toString(2).padStart(16,'0');$('cyc').textContent=cyc.toLocaleString('en-US');
+ $('mon').innerHTML=[[18944,80],[18976,81],[19552,99],[19584,100]].map(([a,r])=>`<tr><td>RAM[${a}]</td><td>${r}</td><td>${ram[a]}${r===100?' (outside box)':''}</td></tr>`).join('');
+}
+function frame(){if(!$('pg-part-c').classList.contains('on')){requestAnimationFrame(frame);return}if(running){const n=+$('spd').value;for(let k=0;k<n;k++)step()}render();requestAnimationFrame(frame)}
+$('run').onclick=e=>{running=!running;e.target.textContent=running?'Pause CPU':'Resume CPU';e.target.blur()};
+$('stp').onclick=e=>{running=false;$('run').textContent='Resume CPU';step();e.target.blur()};
+$('rst').onclick=e=>{ram.fill(0);A=D=pc=cyc=0;lastIns=0;held=locked=false;$('lock').setAttribute('aria-pressed','false');e.target.blur()};
+$('spd').oninput=e=>$('spv').textContent=e.target.value+' steps/frame';
+const h=$('hold');h.addEventListener('pointerdown',e=>{e.preventDefault();held=true;setKey(75)});
+['pointerup','pointerleave','pointercancel'].forEach(t=>h.addEventListener(t,()=>{if(held&&!locked){setKey(0)}held=false}));
+$('lock').onclick=e=>{locked=!locked;e.target.setAttribute('aria-pressed',locked);setKey(locked?75:0);e.target.blur()};
+addEventListener('keydown',e=>{if(!$('pg-part-c').classList.contains('on')||/TEXTAREA|INPUT/.test(e.target.tagName))return;if(e.key===' ')e.preventDefault();setKey(e.keyCode||65)});
+addEventListener('keyup',()=>{if(!locked&&!held)setKey(0)});
+frame();
+
+</script></body></html>
